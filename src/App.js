@@ -1,6 +1,8 @@
 import { styled } from "@mui/material/styles";
-import React,{ useState } from "react";
-
+import React,{ useEffect, useState } from "react";
+import alanBtn from "@alan-ai/alan-sdk-web";
+import wordsToNumbers from "words-to-numbers";
+import NewsCards from "./components/NewsCards/NewsCards";
 
 const LogoContainer = styled("div")(({ theme }) => ({
   padding: "0 5%",
@@ -48,7 +50,7 @@ const Card = styled("div")(({ theme }) => ({
 
 const LogoImg = styled("img")(({ theme }) => ({
   height: "27vmin",
-  borderRadius: "15%",
+  borderRadius: "25%",
   padding: "0 5%",
   margin: "3% 0",
   [theme.breakpoints.down("sm")]: {
@@ -81,14 +83,41 @@ function App() {
   const [activeArticle, setActiveArticle] = useState(0);
   const [newsArticle, setNewsArticle] = useState([]);
 
+  useEffect(()=> {
+    alanBtn({
+      key:"e6d10a63d2e88016d38c29ae4247633d2e956eca572e1d8b807a3e2338fdd0dc/stage",
+      onCommand:({command, articles, number}) => {
+        if(command === 'newsHeadlines') {
+          setNewsArticle(articles)
+          setActiveArticle(-1)
+        }
+        else if(command === 'highlight') {
+          setActiveArticle((prev) => prev+1);
+        }
+        else if(command === 'open') {
+          const parsedNumber = number.length > 2 ? wordsToNumbers(number, {fuzzy:true}): number;
+          const article = articles[parsedNumber -1];
+          if(parsedNumber > article.length) {
+            alanBtn().playText("Please try that again...")
+          }else if(article) {
+            alanBtn().playText("Opening");
+          }else {
+            alanBtn().playText("Please try that again..");
+          }
+         }
+      }
+    })
+  })
+
   return (
     <div >
       <LogoContainer>
-        {newsArticle.length && (
-          <div>Hello</div>
+        { newsArticle.length && (
+          <div></div>
         )}
-        <LogoImg  />
+        <LogoImg src="https://voicebot.ai/wp-content/uploads/2019/10/alan.jpg" />
       </LogoContainer>
+      <NewsCards articles={newsArticle} activeArticle={activeArticle} />
     </div>
   );
 }
