@@ -2,6 +2,7 @@ import { styled } from "@mui/material/styles";
 import React,{ useEffect, useState } from "react";
 import alanBtn from "@alan-ai/alan-sdk-web";
 import wordsToNumbers from "words-to-numbers";
+import { Typography } from "@mui/material";
 import NewsCards from "./components/NewsCards/NewsCards";
 
 const LogoContainer = styled("div")(({ theme }) => ({
@@ -50,7 +51,7 @@ const Card = styled("div")(({ theme }) => ({
 
 const LogoImg = styled("img")(({ theme }) => ({
   height: "27vmin",
-  borderRadius: "25%",
+  borderRadius: "15%",
   padding: "0 5%",
   margin: "3% 0",
   [theme.breakpoints.down("sm")]: {
@@ -58,68 +59,68 @@ const LogoImg = styled("img")(({ theme }) => ({
   },
 }));
 
-const Footer = styled("div")(({ theme }) => ({
-  textAlign: "center",
-  position: "fixed",
-  left: 0,
-  bottom: 0,
-  color: "black",
-  width: "100%",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  height: "120px",
-  [theme.breakpoints.down("sm")]: {
-    display: "none",
-  },
-}));
-
-const Link = styled("a")(({ theme }) => ({
-  textDecoration: "none",
-  color: "rgba(21, 101, 192)",
-}));
-
-function App() {
+const App = () => {
   const [activeArticle, setActiveArticle] = useState(0);
-  const [newsArticle, setNewsArticle] = useState([]);
+  const [newsArticles, setNewsArticles] = useState([]);
 
-  useEffect(()=> {
+  useEffect(() => {
     alanBtn({
-      key:"e6d10a63d2e88016d38c29ae4247633d2e956eca572e1d8b807a3e2338fdd0dc/stage",
-      onCommand:({command, articles, number}) => {
-        if(command === 'newsHeadlines') {
-          setNewsArticle(articles)
-          setActiveArticle(-1)
-        }
-        else if(command === 'highlight') {
-          setActiveArticle((prev) => prev+1);
-        }
-        else if(command === 'open') {
-          const parsedNumber = number.length > 2 ? wordsToNumbers(number, {fuzzy:true}): number;
-          const article = articles[parsedNumber -1];
-          if(parsedNumber > article.length) {
-            alanBtn().playText("Please try that again...")
-          }else if(article) {
-            alanBtn().playText("Opening");
-          }else {
-            alanBtn().playText("Please try that again..");
+      key: "e6d10a63d2e88016d38c29ae4247633d2e956eca572e1d8b807a3e2338fdd0dc/stage",
+      onCommand: ({ command, articles, number }) => {
+        if (command === "newHeadlines") {
+          setNewsArticles(articles);
+          setActiveArticle(-1);
+        } else if (command === "highlight") {
+          setActiveArticle((prevActiveArticle) => prevActiveArticle + 1);
+        } else if (command === "open") {
+          const parsedNumber =
+            number.length > 2
+              ? wordsToNumbers(number, { fuzzy: true })
+              : number;
+          const article = articles[parsedNumber - 1];
+
+          if (parsedNumber > articles.length) {
+            alanBtn().playText("Please try that again...");
+          } else if (article) {
+            window.open(article.url, "_blank");
+            alanBtn().playText("Opening...");
+          } else {
+            alanBtn().playText("Please try that again...");
           }
-         }
-      }
-    })
-  })
+        }
+      },
+    });
+  }, []);
 
   return (
-    <div >
+    <div>
       <LogoContainer>
-        { newsArticle.length && (
-          <div></div>
-        )}
-        <LogoImg src="https://voicebot.ai/wp-content/uploads/2019/10/alan.jpg" />
+        {newsArticles.length ? (
+          <InfoContainer>
+            <Card>
+              <Typography variant="h5" component="h2">
+                Try saying: <br />
+                <br />
+                Open article number [4]
+              </Typography>
+            </Card>
+            <Card>
+              <Typography variant="h5" component="h2">
+                Try saying: <br />
+                <br />
+                Go back
+              </Typography>
+            </Card>
+          </InfoContainer>
+        ) : null}
+        <LogoImg
+          src="https://miro.medium.com/max/600/1*CJyCnZVdr-EfgC27MAdFUQ.jpeg"
+          alt="logo"
+        />
       </LogoContainer>
-      <NewsCards articles={newsArticle} activeArticle={activeArticle} />
+      <NewsCards articles={newsArticles} activeArticle={activeArticle} />
     </div>
   );
-}
+};
 
 export default App;

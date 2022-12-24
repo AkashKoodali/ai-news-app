@@ -76,4 +76,5 @@ const NewsCards = ({ articles, activeArticle }) => {
   );
 };
 
+
 export default NewsCards;
